@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ interface CustomerTableProps {
 }
 
 export default function CustomerTable({ customers }: CustomerTableProps) {
+  const router = useRouter();
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -67,7 +69,11 @@ export default function CustomerTable({ customers }: CustomerTableProps) {
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {customers.map((customer) => (
-                <TableRow key={customer.id}>
+                <TableRow
+                  key={customer.id}
+                  onClick={() => router.push(`/customers/${customer.id}`)}
+                  className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                >
                   <TableCell className="px-5 py-4 text-start sm:px-6">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 overflow-hidden rounded-full">
@@ -113,6 +119,7 @@ export default function CustomerTable({ customers }: CustomerTableProps) {
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     <Link
                       href={`/customers/${customer.id}`}
+                      onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-1 text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300"
                     >
                       <svg
