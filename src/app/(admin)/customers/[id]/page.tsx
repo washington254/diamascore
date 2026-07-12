@@ -6,7 +6,7 @@ import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomerAnalyticsChart from "@/components/customers/CustomerAnalyticsChart";
 import Badge from "@/components/ui/badge/Badge";
-import { getCustomerById } from "@/data/customers";
+import { getCustomerByIdFromDb } from "@/data/customers";
 
 interface CustomerPageProps {
   params: Promise<{
@@ -18,7 +18,7 @@ export async function generateMetadata({
   params,
 }: CustomerPageProps): Promise<Metadata> {
   const { id } = await params;
-  const customer = getCustomerById(id);
+  const customer = await getCustomerByIdFromDb(id);
 
   if (!customer) {
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata({
 
 export default async function CustomerPage({ params }: CustomerPageProps) {
   const { id } = await params;
-  const customer = getCustomerById(id);
+  const customer = await getCustomerByIdFromDb(id);
 
   if (!customer) {
     notFound();

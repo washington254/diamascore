@@ -1,3 +1,6 @@
+import prisma from "../../lib/prisma";
+import { mapCustomerRecord, mapCustomerRecords } from "../lib/customer-utils";
+
 // Customer data types and dummy data for Diamas Core
 
 export interface Customer {
@@ -244,6 +247,66 @@ export const customers: Customer[] = [
   },
 ];
 
+async function ensureCustomerTable() {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "Customer" (
+      "id" TEXT PRIMARY KEY,
+      "name" TEXT NOT NULL,
+      "email" TEXT NOT NULL UNIQUE,
+      "avatar" TEXT,
+      "platform" TEXT NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'Active',
+      "registeredAt" TIMESTAMP(3) NOT NULL,
+      "popupOpens" INTEGER NOT NULL DEFAULT 0,
+      "popupCloses" INTEGER NOT NULL DEFAULT 0,
+      "popupSuccess" INTEGER NOT NULL DEFAULT 0,
+      "popupRejection" INTEGER NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+}
+
+export async function getAllCustomersFromDb(): Promise<Customer[]> {
+  try {
+    await ensureCustomerTable();
+
+    const rows = await prisma.customer.findMany({
+      orderBy: {
+        registeredAt: "desc",
+      },
+    });
+
+    return mapCustomerRecords(rows);
+  } catch (error) {
+    console.error("Failed to load customers from DB:", error);
+    return customers;
+  }
+}
+
+export async function getCustomerByIdFromDb(
+  id: string,
+): Promise<Customer | undefined> {
+  try {
+    await ensureCustomerTable();
+
+    const row = await prisma.customer.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!row) {
+      return undefined;
+    }
+
+    return mapCustomerRecord(row);
+  } catch (error) {
+    console.error("Failed to load customer from DB:", error);
+    return customers.find((customer) => customer.id === id);
+  }
+}
+
 // Helper functions
 export const getCustomerById = (id: string): Customer | undefined => {
   return customers.find((customer) => customer.id === id);
@@ -258,7 +321,7 @@ export const getTotalCustomersCount = (): number => {
 };
 
 export const getCustomersByPlatform = (
-  platform: "Web" | "Mobile" | "Desktop"
+  platform: "Web" | "Mobile" | "Desktop",
 ): Customer[] => {
   return customers.filter((customer) => customer.platform === platform);
 };

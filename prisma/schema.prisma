@@ -14,3 +14,19 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Customer {
+  id            String   @id
+  name          String
+  email         String   @unique
+  avatar        String?
+  platform      String
+  status        String   @default("Active")
+  registeredAt  DateTime
+  popupOpens    Int      @default(0)
+  popupCloses   Int      @default(0)
+  popupSuccess  Int      @default(0)
+  popupRejection Int     @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

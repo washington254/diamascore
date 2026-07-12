@@ -4,20 +4,19 @@ import CustomerMetrics from "@/components/customers/CustomerMetrics";
 import CustomerList from "@/components/customers/CustomerList";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import {
-  customers,
-  getActiveCustomersCount,
-  getTotalCustomersCount,
-} from "@/data/customers";
+import { getAllCustomersFromDb } from "@/data/customers";
 
 export const metadata: Metadata = {
   title: "Dashboard | Diamas Core",
   description: "Diamas Core admin dashboard",
 };
 
-export default function Dashboard() {
-  const totalCustomers = getTotalCustomersCount();
-  const activeCustomers = getActiveCustomersCount();
+export default async function Dashboard() {
+  const customers = await getAllCustomersFromDb();
+  const totalCustomers = customers.length;
+  const activeCustomers = customers.filter(
+    (customer) => customer.status === "Active",
+  ).length;
 
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">

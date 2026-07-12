@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import React from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomerTable from "@/components/customers/CustomerTable";
-import { customers } from "@/data/customers";
+import { getAllCustomersFromDb } from "@/data/customers";
 
 export const metadata: Metadata = {
   title: "Customers | Diamas Core",
   description: "View and manage all customers in Diamas Core",
 };
 
-export default function CustomersPage() {
+export default async function CustomersPage() {
+  const customers = await getAllCustomersFromDb();
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Customers" />
