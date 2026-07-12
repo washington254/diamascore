@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Platform {
+  Shopify
+  WordPress
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -20,13 +25,13 @@ model Customer {
   name          String
   email         String   @unique
   avatar        String?
-  platform      String
+  platform      Platform
   status        String   @default("Active")
   registeredAt  DateTime
   popupOpens    Int      @default(0)
   popupCloses   Int      @default(0)
   popupSuccess  Int      @default(0)
-  popupRejection Int     @default(0)
+  popupRejection Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

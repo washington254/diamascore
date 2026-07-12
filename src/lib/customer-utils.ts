@@ -16,10 +16,14 @@ type CustomerDbRow = {
 
 const defaultAvatar = "/images/user/user-17.jpg";
 
-const platformMap: Record<string, Customer["platform"]> = {
-  Web: "Web",
-  Mobile: "Mobile",
-  Desktop: "Desktop",
+const normalizePlatform = (platform: string): Customer["platform"] => {
+  const normalized = platform.trim().toLowerCase();
+
+  if (normalized === "wordpress") {
+    return "WordPress";
+  }
+
+  return "Shopify";
 };
 
 const statusMap: Record<string, Customer["status"]> = {
@@ -34,7 +38,7 @@ export function mapCustomerRecord(record: CustomerDbRow): Customer {
     name: record.name,
     email: record.email,
     avatar: record.avatar || defaultAvatar,
-    platform: platformMap[record.platform] || "Web",
+    platform: normalizePlatform(record.platform),
     status: statusMap[record.status || "Active"] || "Active",
     registeredDate: record.registeredAt.toISOString(),
     popupStats: {

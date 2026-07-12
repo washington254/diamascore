@@ -12,7 +12,7 @@ async function ensureCustomerTable() {
       "name" TEXT NOT NULL,
       "email" TEXT NOT NULL UNIQUE,
       "avatar" TEXT,
-      "platform" TEXT NOT NULL,
+      "platform" TEXT NOT NULL CHECK ("platform" IN ('Shopify', 'WordPress')),
       "status" TEXT NOT NULL DEFAULT 'Active',
       "registeredAt" TIMESTAMP(3) NOT NULL,
       "popupOpens" INTEGER NOT NULL DEFAULT 0,

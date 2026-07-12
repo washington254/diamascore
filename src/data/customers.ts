@@ -8,7 +8,7 @@ export interface Customer {
   name: string;
   email: string;
   avatar: string;
-  platform: "Web" | "Mobile" | "Desktop";
+  platform: "Shopify" | "WordPress";
   status: "Active" | "Inactive" | "Pending";
   registeredDate: string;
   popupStats: {
@@ -25,7 +25,7 @@ export const customers: Customer[] = [
     name: "Sarah Johnson",
     email: "sarah.johnson@example.com",
     avatar: "/images/user/user-17.jpg",
-    platform: "Web",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-01-15",
     popupStats: {
@@ -40,7 +40,7 @@ export const customers: Customer[] = [
     name: "Michael Chen",
     email: "michael.chen@example.com",
     avatar: "/images/user/user-18.jpg",
-    platform: "Mobile",
+    platform: "WordPress",
     status: "Active",
     registeredDate: "2024-02-10",
     popupStats: {
@@ -55,7 +55,7 @@ export const customers: Customer[] = [
     name: "Emily Davis",
     email: "emily.davis@example.com",
     avatar: "/images/user/user-19.jpg",
-    platform: "Desktop",
+    platform: "Shopify",
     status: "Pending",
     registeredDate: "2024-03-05",
     popupStats: {
@@ -70,7 +70,7 @@ export const customers: Customer[] = [
     name: "James Wilson",
     email: "james.wilson@example.com",
     avatar: "/images/user/user-20.jpg",
-    platform: "Web",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-01-28",
     popupStats: {
@@ -85,7 +85,7 @@ export const customers: Customer[] = [
     name: "Sophia Martinez",
     email: "sophia.martinez@example.com",
     avatar: "/images/user/user-21.jpg",
-    platform: "Mobile",
+    platform: "WordPress",
     status: "Inactive",
     registeredDate: "2023-12-20",
     popupStats: {
@@ -100,7 +100,7 @@ export const customers: Customer[] = [
     name: "David Anderson",
     email: "david.anderson@example.com",
     avatar: "/images/user/user-22.jpg",
-    platform: "Desktop",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-02-14",
     popupStats: {
@@ -115,7 +115,7 @@ export const customers: Customer[] = [
     name: "Olivia Thompson",
     email: "olivia.thompson@example.com",
     avatar: "/images/user/user-23.jpg",
-    platform: "Web",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-03-12",
     popupStats: {
@@ -130,7 +130,7 @@ export const customers: Customer[] = [
     name: "Robert Garcia",
     email: "robert.garcia@example.com",
     avatar: "/images/user/user-24.jpg",
-    platform: "Mobile",
+    platform: "WordPress",
     status: "Pending",
     registeredDate: "2024-03-20",
     popupStats: {
@@ -145,7 +145,7 @@ export const customers: Customer[] = [
     name: "Isabella Lee",
     email: "isabella.lee@example.com",
     avatar: "/images/user/user-25.jpg",
-    platform: "Desktop",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-01-08",
     popupStats: {
@@ -160,7 +160,7 @@ export const customers: Customer[] = [
     name: "William Brown",
     email: "william.brown@example.com",
     avatar: "/images/user/user-26.jpg",
-    platform: "Web",
+    platform: "WordPress",
     status: "Inactive",
     registeredDate: "2023-11-15",
     popupStats: {
@@ -175,7 +175,7 @@ export const customers: Customer[] = [
     name: "Ava Taylor",
     email: "ava.taylor@example.com",
     avatar: "/images/user/user-27.jpg",
-    platform: "Mobile",
+    platform: "WordPress",
     status: "Active",
     registeredDate: "2024-02-25",
     popupStats: {
@@ -190,7 +190,7 @@ export const customers: Customer[] = [
     name: "Ethan Moore",
     email: "ethan.moore@example.com",
     avatar: "/images/user/user-28.jpg",
-    platform: "Desktop",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-03-01",
     popupStats: {
@@ -205,7 +205,7 @@ export const customers: Customer[] = [
     name: "Mia White",
     email: "mia.white@example.com",
     avatar: "/images/user/user-29.jpg",
-    platform: "Web",
+    platform: "Shopify",
     status: "Pending",
     registeredDate: "2024-03-18",
     popupStats: {
@@ -220,7 +220,7 @@ export const customers: Customer[] = [
     name: "Noah Harris",
     email: "noah.harris@example.com",
     avatar: "/images/user/user-30.jpg",
-    platform: "Mobile",
+    platform: "WordPress",
     status: "Active",
     registeredDate: "2024-01-22",
     popupStats: {
@@ -235,7 +235,7 @@ export const customers: Customer[] = [
     name: "Emma Clark",
     email: "emma.clark@example.com",
     avatar: "/images/user/user-31.jpg",
-    platform: "Desktop",
+    platform: "Shopify",
     status: "Active",
     registeredDate: "2024-02-05",
     popupStats: {
@@ -254,7 +254,7 @@ async function ensureCustomerTable() {
       "name" TEXT NOT NULL,
       "email" TEXT NOT NULL UNIQUE,
       "avatar" TEXT,
-      "platform" TEXT NOT NULL,
+      "platform" TEXT NOT NULL CHECK ("platform" IN ('Shopify', 'WordPress')),
       "status" TEXT NOT NULL DEFAULT 'Active',
       "registeredAt" TIMESTAMP(3) NOT NULL,
       "popupOpens" INTEGER NOT NULL DEFAULT 0,
@@ -321,7 +321,7 @@ export const getTotalCustomersCount = (): number => {
 };
 
 export const getCustomersByPlatform = (
-  platform: "Web" | "Mobile" | "Desktop",
+  platform: "Shopify" | "WordPress",
 ): Customer[] => {
   return customers.filter((customer) => customer.platform === platform);
 };

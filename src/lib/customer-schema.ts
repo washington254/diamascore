@@ -1,10 +1,17 @@
 import { z } from "zod";
 
+const platformSchema = z
+  .string()
+  .trim()
+  .transform((value) => value.toLowerCase())
+  .pipe(z.enum(["shopify", "wordpress"]))
+  .transform((value) => (value === "shopify" ? "Shopify" : "WordPress"));
+
 export const customerPayloadSchema = z.object({
   id: z.string().trim().min(1, "Customer id is required"),
   name: z.string().trim().min(1, "Customer name is required"),
   email: z.string().trim().email("A valid email is required"),
-  platform: z.enum(["Web", "Mobile", "Desktop"]),
+  platform: platformSchema,
   registeredDate: z
     .string()
     .trim()
