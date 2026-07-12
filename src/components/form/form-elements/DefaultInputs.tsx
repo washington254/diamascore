@@ -25,7 +25,7 @@ export default function DefaultInputs() {
           <Input type="text" />
         </div>
         <div>
-          <Label>Input with Placeholder</Label>
+          <Label>Input wth Placeholder</Label>
           <Input type="text" placeholder="info@gmail.com" />
         </div>
         <div>
