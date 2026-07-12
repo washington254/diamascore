@@ -1,43 +1,55 @@
 import "dotenv/config";
 import prisma from "../lib/prisma";
+import { randomUUID } from "crypto";
 
 async function testDatabase() {
   console.log("🔍 Testing Prisma Postgres connection...\n");
 
   try {
-    console.log("✅ Connected to database!");
+    console.log("📝 Creating a test customer...");
 
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "User" (
-        "id" SERIAL PRIMARY KEY,
-        "email" TEXT NOT NULL UNIQUE,
-        "name" TEXT,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    console.log("\n📝 Creating a test user...");
     const timestamp = Date.now();
-    const newUser = await prisma.user.create({
+
+    const customer = await prisma.customer.create({
       data: {
-        email: `demo-${timestamp}@example.com`,
-        name: "Demo User",
+        id: randomUUID(),
+        name: "Test Customer",
+        email: `customer-${timestamp}@example.com`,
+        platform: "WordPress",
+        registeredAt: new Date(),
       },
     });
-    console.log("✅ Created user:", newUser);
 
-    console.log("\n📋 Fetching all users...");
-    const allUsers = await prisma.user.findMany();
-    console.log(`✅ Found ${allUsers.length} user(s):`);
-    allUsers.forEach((user) => {
-      console.log(`   - ${user.name} (${user.email})`);
+    console.log("✅ Customer created!");
+    console.log(customer);
+
+    console.log("\n📋 Fetching customers...");
+
+    const customers = await prisma.customer.findMany();
+
+    console.log(`✅ Found ${customers.length} customer(s).\n`);
+
+    customers.forEach((customer) => {
+      console.log(
+        `• ${customer.name} | ${customer.email} | ${customer.platform}`
+      );
     });
 
-    console.log("\n🎉 All tests passed! Your database is working perfectly.\n");
+    console.log("\n🧹 Cleaning up test customer...");
+
+    await prisma.customer.delete({
+      where: {
+        id: customer.id,
+      },
+    });
+
+    console.log("✅ Test customer deleted.");
+    console.log("\n🎉 Database test passed!");
   } catch (error) {
-    console.error("❌ Error:", error);
-    process.exit(1);
+    console.error("\n❌ Database test failed:");
+    console.error(error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
