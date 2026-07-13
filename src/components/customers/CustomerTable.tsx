@@ -15,10 +15,26 @@ import { Customer } from "@/data/customers";
 
 interface CustomerTableProps {
   customers: Customer[];
+  searchQuery?: string;
 }
 
-export default function CustomerTable({ customers }: CustomerTableProps) {
+export default function CustomerTable({
+  customers,
+  searchQuery = "",
+}: CustomerTableProps) {
   const router = useRouter();
+
+  const filteredCustomers = React.useMemo(() => {
+    if (!searchQuery) return customers;
+    const q = searchQuery.toLowerCase();
+    return customers.filter(
+      (customer) =>
+        customer.name.toLowerCase().includes(q) ||
+        customer.email.toLowerCase().includes(q) ||
+        customer.id.toLowerCase().includes(q),
+    );
+  }, [customers, searchQuery]);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -68,84 +84,99 @@ export default function CustomerTable({ customers }: CustomerTableProps) {
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {customers.map((customer) => (
-                <TableRow
-                  key={customer.id}
-                  onClick={() => router.push(`/customers/${customer.id}`)}
-                  className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
-                >
-                  <TableCell className="px-5 py-4 text-start sm:px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 overflow-hidden rounded-full">
-                        <Image
-                          width={40}
-                          height={40}
-                          src={customer.avatar}
-                          alt={customer.name}
-                        />
+              {filteredCustomers.length > 0 ? (
+                filteredCustomers.map((customer) => (
+                  <TableRow
+                    key={customer.id}
+                    onClick={() => router.push(`/customers/${customer.id}`)}
+                    className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                  >
+                    <TableCell className="px-5 py-4 text-start sm:px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 overflow-hidden rounded-full">
+                          <Image
+                            width={40}
+                            height={40}
+                            src={customer.avatar}
+                            alt={customer.name}
+                          />
+                        </div>
+                        <div>
+                          <span className="block text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                            {customer.name}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="block text-theme-sm font-medium text-gray-800 dark:text-white/90">
-                          {customer.name}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                    {customer.email}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                    <span className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-2.5 py-1 text-theme-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                      {customer.platform}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                    <Badge
-                      size="sm"
-                      color={
-                        customer.status === "Active"
-                          ? "success"
-                          : customer.status === "Pending"
-                          ? "warning"
-                          : "error"
-                      }
-                    >
-                      {customer.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                    {new Date(customer.registeredDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    <Link
-                      href={`/customers/${customer.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300"
-                    >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                      {customer.email}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                      <span className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-2.5 py-1 text-theme-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        {customer.platform}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                      <Badge
+                        size="sm"
+                        color={
+                          customer.status === "Active"
+                            ? "success"
+                            : customer.status === "Pending"
+                            ? "warning"
+                            : "error"
+                        }
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      View
-                    </Link>
+                        {customer.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                      {new Date(customer.registeredDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      <Link
+                        href={`/customers/${customer.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300"
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                        View
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="px-5 py-12 text-center text-gray-500 dark:text-gray-400"
+                  >
+                    No customers found matching "
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      {searchQuery}
+                    </span>
+                    "
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>

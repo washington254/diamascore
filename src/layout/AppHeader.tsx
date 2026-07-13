@@ -5,10 +5,13 @@ import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState ,useEffect,useRef} from "react";
+import { useRouter } from "next/navigation";
+import { Customer } from "@/data/customers";
+import React, { useState, useEffect, useRef } from "react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const router = useRouter();
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
@@ -23,7 +26,49 @@ const AppHeader: React.FC = () => {
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
   };
+
+  // Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleFocus = async () => {
+    setIsDropdownOpen(true);
+    if (customers.length === 0 && !isLoading) {
+      setIsLoading(true);
+      try {
+        const res = await fetch("/api/customers");
+        if (res.ok) {
+          const data = await res.json();
+          setCustomers(data);
+        }
+      } catch (err) {
+        console.error("Error fetching customers for search:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDropdownOpen(false);
+    router.push(`/customers?search=${encodeURIComponent(searchQuery)}`);
+  };
+
+  const filteredCustomers = customers.filter((customer) => {
+    if (!searchQuery) return false;
+    const q = searchQuery.toLowerCase();
+    return (
+      customer.name.toLowerCase().includes(q) ||
+      customer.email.toLowerCase().includes(q) ||
+      customer.id.toLowerCase().includes(q)
+    );
+  });
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -33,10 +78,21 @@ const AppHeader: React.FC = () => {
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -95,7 +151,7 @@ const AppHeader: React.FC = () => {
               width={154}
               height={32}
               className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
+              src="./images/logo/logo.svg"
               alt="Logo"
             />
           </Link>
@@ -120,8 +176,8 @@ const AppHeader: React.FC = () => {
             </svg>
           </button>
 
-          <div className="hidden lg:block">
-            <form>
+          <div className="hidden lg:block" ref={searchContainerRef}>
+            <form onSubmit={handleSearchSubmit}>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                   <svg
@@ -143,34 +199,100 @@ const AppHeader: React.FC = () => {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Search or type command..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={handleFocus}
+                  placeholder="Search customer..."
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                 />
 
-                <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+                <button
+                  type="submit"
+                  className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+                >
                   <span> ⌘ </span>
                   <span> K </span>
                 </button>
+
+                {/* Dropdown menu */}
+                {isDropdownOpen && searchQuery && (
+                  <div className="absolute left-0 right-0 mt-2 max-h-[320px] overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-800 dark:bg-gray-900 z-99999 scrollbar-thin">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center py-6 text-sm text-gray-500 dark:text-gray-400">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Loading customers...
+                      </div>
+                    ) : filteredCustomers.length > 0 ? (
+                      <div className="space-y-1">
+                        <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider dark:text-gray-500">
+                          Customers
+                        </div>
+                        {filteredCustomers.map((customer) => (
+                          <Link
+                            key={customer.id}
+                            href={`/customers/${customer.id}`}
+                            onClick={() => {
+                              setSearchQuery("");
+                              setIsDropdownOpen(false);
+                            }}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer group"
+                          >
+                            {customer.avatar ? (
+                              <Image
+                                width={32}
+                                height={32}
+                                className="h-8 w-8 rounded-full object-cover border border-gray-100 dark:border-gray-800"
+                                src={customer.avatar}
+                                alt={customer.name}
+                              />
+                            ) : (
+                              <div className="h-8 w-8 rounded-full bg-brand-100 dark:bg-brand-900/50 flex items-center justify-center text-xs font-semibold text-brand-600 dark:text-brand-400">
+                                {customer.name.charAt(0)}
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className="block text-sm font-medium text-gray-800 dark:text-white/90 truncate group-hover:text-brand-600 dark:group-hover:text-brand-400">
+                                {customer.name}
+                              </span>
+                              <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {customer.email}
+                              </span>
+                            </div>
+                            <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-400/10 dark:text-gray-400 dark:ring-gray-400/20">
+                              {customer.platform}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No customers found for <span className="font-semibold text-gray-700 dark:text-gray-300">"{searchQuery}"</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
           </div>
         </div>
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
 
-           <NotificationDropdown /> 
+            <NotificationDropdown />
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}
-          <UserDropdown /> 
-    
+          <UserDropdown />
+
         </div>
       </div>
     </header>
