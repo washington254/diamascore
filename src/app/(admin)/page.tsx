@@ -33,9 +33,9 @@ export default async function Dashboard() {
         <CustomerList customers={customers} maxDisplay={6} />
       </div>
 
-      <div className="col-span-12">
+      {/* <div className="col-span-12">
         <StatisticsChart />
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -32,3 +32,14 @@ export const customerPayloadSchema = z.object({
 });
 
 export type CustomerPayload = z.infer<typeof customerPayloadSchema>;
+
+export const popupStatsUpdateSchema = z.object({
+  popupStats: z.object({
+    opens: z.number().int().nonnegative(),
+    closes: z.number().int().nonnegative(),
+    success: z.number().int().nonnegative(),
+    rejection: z.number().int().nonnegative(),
+  }),
+});
+
+export type PopupStatsUpdate = z.infer<typeof popupStatsUpdateSchema>;
