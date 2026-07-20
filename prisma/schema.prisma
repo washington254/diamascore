@@ -21,10 +21,12 @@ model Customer {
   platform      Platform
   status        String   @default("Active")
   registeredAt  DateTime
-  popupOpens    Int      @default(0)
-  popupCloses   Int      @default(0)
-  popupSuccess  Int      @default(0)
-  popupRejection Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  popupOpens       Int      @default(0)
+  popupCloses      Int      @default(0)
+  popupSuccess     Int      @default(0)
+  popupRejection   Int      @default(0)
+  videoUrlDesktop  String?
+  videoUrlMobile   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
