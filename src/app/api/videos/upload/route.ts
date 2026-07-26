@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadVideoToCloudinary } from "@/lib/cloudinary";
+import {
+  type VideoVariant,
+  uploadVideoToCloudinary,
+} from "@/lib/cloudinary";
 
 // Next.js 14+ App Router – disable default body parser to handle multipart/form-data
 export const runtime = "nodejs";
@@ -18,24 +21,37 @@ export const runtime = "nodejs";
  */
 export async function POST(request: NextRequest) {
   try {
-    // ─── 1. Simple shared-secret auth ───────────────────────────────────────
+    // ─── 1. Require the server-to-server shared secret ──────────────────────
     const expectedNonce = process.env.DIAMAS_WP_NONCE;
-    if (expectedNonce) {
-      const nonce = request.headers.get("x-diamas-nonce");
-      if (nonce !== expectedNonce) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (!expectedNonce) {
+      console.error("[Diamas Videos] DIAMAS_WP_NONCE is not configured");
+      return NextResponse.json(
+        { error: "Video uploads are not configured" },
+        { status: 503 },
+      );
+    }
+
+    const nonce = request.headers.get("x-diamas-nonce");
+    if (nonce !== expectedNonce) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // ─── 2. Parse the multipart form ────────────────────────────────────────
     const formData = await request.formData();
     const customerId = formData.get("customerId")?.toString() ?? "";
-    const variant = formData.get("variant")?.toString() ?? "";
-    const videoFile = formData.get("video") as File | null;
+    const variant = formData.get("variant")?.toString();
+    const videoFile = formData.get("video");
 
     if (!customerId || !variant || !videoFile) {
       return NextResponse.json(
         { error: "Missing required fields: customerId, variant, video" },
+        { status: 400 },
+      );
+    }
+
+    if (!(videoFile instanceof File) || videoFile.size === 0) {
+      return NextResponse.json(
+        { error: "video must be a non-empty uploaded file" },
         { status: 400 },
       );
     }
@@ -71,7 +87,7 @@ export async function POST(request: NextRequest) {
     const cloudinaryUrl = await uploadVideoToCloudinary(
       buffer,
       customerId,
-      variant as "desktop" | "mobile",
+      variant as VideoVariant,
     );
 
     console.log(`[Diamas Videos] Cloudinary URL: ${cloudinaryUrl}`);
@@ -88,7 +104,10 @@ export async function POST(request: NextRequest) {
     });
 
     // ─── 6. Return the URL to WordPress ──────────────────────────────────────
-    return NextResponse.json({ url: cloudinaryUrl }, { status: 200 });
+    return NextResponse.json(
+      { url: cloudinaryUrl, variant },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("[Diamas Videos] Upload failed:", error);
     return NextResponse.json(

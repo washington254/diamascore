@@ -1,14 +1,31 @@
 import { v2 as cloudinary } from "cloudinary";
 
-// Configure Cloudinary with env variables
-cloudinary.config({
+const cloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+};
+
+// Keep these server-only values out of client bundles. This module is imported
+// exclusively by the Node.js upload route.
+cloudinary.config({
+  ...cloudinaryConfig,
   secure: true,
 });
 
 export type VideoVariant = "desktop" | "mobile";
+
+function assertCloudinaryIsConfigured() {
+  if (
+    !cloudinaryConfig.cloud_name ||
+    !cloudinaryConfig.api_key ||
+    !cloudinaryConfig.api_secret
+  ) {
+    throw new Error(
+      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+    );
+  }
+}
 
 /**
  * Upload a video buffer to Cloudinary.
@@ -24,6 +41,8 @@ export async function uploadVideoToCloudinary(
   customerId: string,
   variant: VideoVariant,
 ): Promise<string> {
+  assertCloudinaryIsConfigured();
+
   const publicId = `diamas/customers/${customerId}/popup_video_${variant}`;
 
   const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
@@ -64,6 +83,8 @@ export async function deleteVideoFromCloudinary(
   customerId: string,
   variant: VideoVariant,
 ): Promise<void> {
+  assertCloudinaryIsConfigured();
+
   const publicId = `diamas/customers/${customerId}/popup_video_${variant}`;
   await cloudinary.uploader.destroy(publicId, { resource_type: "video" });
 }

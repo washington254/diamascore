@@ -38,7 +38,7 @@ export default function CustomerAnalyticsChart({
       enabled: false,
     },
     xaxis: {
-      categories: ["Popup Opens", "Closes", "Success", "Rejection"],
+      categories: ["Popup Opens", "Success", "Rejection"],
       labels: {
         style: {
           colors: "#64748b",
@@ -83,7 +83,7 @@ export default function CustomerAnalyticsChart({
       name: "Count",
       data: [
         popupStats.opens,
-        popupStats.closes,
+        // popupStats.closes,
         popupStats.success,
         popupStats.rejection,
       ],
@@ -123,7 +123,7 @@ export default function CustomerAnalyticsChart({
           </p>
         </div>
 
-        <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
+        {/* <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-purple-500"></div>
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -133,7 +133,7 @@ export default function CustomerAnalyticsChart({
           <p className="mt-2 text-xl font-bold text-gray-800 dark:text-white/90">
             {popupStats.closes}
           </p>
-        </div>
+        </div> */}
 
         <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
           <div className="flex items-center gap-2">
